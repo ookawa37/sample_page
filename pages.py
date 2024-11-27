@@ -6,6 +6,7 @@ import midi_utils as mu
 import delete as dl
 import numpy as np
 import tempfile
+import os
 import subprocess
 from chord_estimate import EstimateChord
 from produce_note import ProduceNote
@@ -223,9 +224,8 @@ class MusicscorePage():
 
     def generate_score(self, lilypond_code):
         temp_dir = st.session_state.temp_dir.name
-        ly_file_path = f"{temp_dir}\example.ly"
-        svg_file_path = f"{temp_dir}\example.svg"
-        print(f"svg_file_path{svg_file_path}")
+        ly_file_path = os.path.join(temp_dir, "example.ly")
+        svg_file_path = os.path.join(temp_dir, "example.svg")
 
         with open(ly_file_path, "w", encoding="utf-8") as file:
             file.write(lilypond_code)
