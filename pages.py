@@ -94,7 +94,7 @@ class TempoChangerPage():
 
     def run_pages(self):
         dl.handle_cleanup_request()
-        
+
         self.upload_and_convert_file()
         if st.session_state.step:
             self.play_full_audio()
@@ -200,7 +200,7 @@ class MusicscorePage():
         
     def generate_lilypond_code(self, key_signature, notes_sequence, time_signature="4/4", clef="treble"):
         return f'''
-        \\version "2.24.4"
+        \\version "2.22.0"
         \\paper {{
             indent = 0\mm
             paper-width = 190\\mm
