@@ -3,6 +3,7 @@ import pretty_midi
 import io
 import convert as cv
 import midi_utils as mu
+import delete as dl
 import numpy as np
 import tempfile
 import subprocess
@@ -26,6 +27,7 @@ class TempoChangerPage():
             st.session_state.end_time = 8.0
             st.session_state.full_audio = None
             st.session_state.temp_dir = tempfile.TemporaryDirectory()
+            st.session_state["temp_files"] = []
             st.session_state.note_numbers = []
             st.session_state.generated_score = None
             st.session_state.initialized = True
@@ -91,6 +93,8 @@ class TempoChangerPage():
 
 
     def run_pages(self):
+        dl.handle_cleanup_request()
+        
         self.upload_and_convert_file()
         if st.session_state.step:
             self.play_full_audio()
