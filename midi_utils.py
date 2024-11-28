@@ -71,7 +71,7 @@ def get_closeest_downbeats(midi_data, start_time, end_time):
     return closest_beats
 
 
-def generate_count_in(default_tempo, count=4):
+def generate_count_in(default_tempo, start_time=0, count=4):
     count_in_midi = pretty_midi.PrettyMIDI()
     click_instrument = pretty_midi.Instrument(program=0, is_drum=True)
 
@@ -81,8 +81,8 @@ def generate_count_in(default_tempo, count=4):
         note = pretty_midi.Note(
             velocity=127,            # 音量
             pitch=37,                # スネアドラム音
-            start=i * beat_duration, # 開始時間
-            end=(i + 0.5) * beat_duration  # 半拍分の長さ
+            start=start_time + i * beat_duration, # 開始時間
+            end=start_time + (i + 0.5) * beat_duration  # 半拍分の長さ
         )
         click_instrument.notes.append(note)
 
@@ -90,16 +90,28 @@ def generate_count_in(default_tempo, count=4):
     return count_in_midi
 
 
-def combine_midi(midi_data, count_in_midi, default_tempo):
+def combine_midi(midi_data, count_in_midi, default_tempo, count_in_interval=4):
     count_in_duration = 4 * (60 / default_tempo)
     midi_data.adjust_times(
         [0, midi_data.get_end_time()], 
         [count_in_duration, midi_data.get_end_time() + count_in_duration]
     )
 
+    total_duration = midi_data.get_end_time()
     combined_midi = pretty_midi.PrettyMIDI()
-    combined_midi.instruments.extend(count_in_midi.instruments)  # カウントインを追加
-    combined_midi.instruments.extend(midi_data.instruments)     # 元の音源を追加
+
+    combined_midi.instruments.extend(count_in_midi.instruments)
+    combined_midi.instruments.extend(midi_data.instruments)
+
+    # カウントインを曲の終わりまで繰り返し追加
+    current_time = count_in_interval * (60.0 / default_tempo)
+    while current_time < total_duration:
+        # 現在の位置にカウントインを追加
+        count_in_midi_with_offset = generate_count_in(default_tempo, start_time=current_time)
+        combined_midi.instruments.extend(count_in_midi_with_offset.instruments)
+
+        # 次のカウントインの開始位置を計算
+        current_time += count_in_interval * (60.0 / default_tempo)  # 次のカウントインを入れる時刻
 
     return combined_midi
 
