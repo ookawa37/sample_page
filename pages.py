@@ -121,6 +121,7 @@ class TempoChangerPage():
             if mb.generate_musicscore_button:
                 produce_note = ProduceNote(chord_list, key, mb.progression_type)
                 st.session_state.note_numbers = produce_note.run_produce_note()
+                print(f"st.session_state.note_numbers{st.session_state.note_numbers}")
 
                 if len(st.session_state.note_numbers) > 0:
                     musicscore = MusicscorePage(key, st.session_state.note_numbers)
