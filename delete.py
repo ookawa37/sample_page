@@ -19,6 +19,6 @@ def inject_js_to_cleanup():
 
 
 def handle_cleanup_request():
-    if st.experimental_get_query_params().get("cleanup_temp_dir"):
+    if st.query_params.get("cleanup_temp_dir"):
         cleanup_temp_dir()
 

@@ -1,6 +1,5 @@
 import tempfile
 from midi2audio import FluidSynth
-import midi_utils as mu
 from pretty_midi import PrettyMIDI
 
 def convert_midi_to_wav(midi_data):
@@ -9,7 +8,8 @@ def convert_midi_to_wav(midi_data):
         midi_path = temp_midi.name
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_wav:
-        fs = FluidSynth()
+        sound_font_path = "default_sound_font.sf2"
+        fs = FluidSynth(sound_font_path)
         fs.midi_to_audio(midi_path, temp_wav.name)
         return temp_wav.name
 
