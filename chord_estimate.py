@@ -12,19 +12,19 @@ class EstimateChord():
         pass
 
 
-    def calc_double_length(self, end_time, midi_data):
-        tempo_bpm, _ = get_tempo(end_time, midi_data)
+    def calc_double_length(self):
+        tempo_bpm, _ = get_tempo(self.start_time, self.end_time, self.midi_data)
         beat_length = 60 / tempo_bpm
         double_length = beat_length * 2
 
         return double_length
 
 
-    def get_chromagram(self, midi_data, double_length, start_time, end_time):
-        chroma = midi_data.get_chroma()
+    def get_chromagram(self, double_length):
+        chroma = self.midi_data.get_chroma()
         fs = 100
-        start_frame = int(start_time * fs)
-        end_frame = int(end_time * fs)
+        start_frame = int(self.start_time * fs)
+        end_frame = int(self.end_time * fs)
 
         # 指定された時間範囲のクロマグラムを抽出
         chroma = chroma[:, start_frame:end_frame]
@@ -44,9 +44,9 @@ class EstimateChord():
         return aggregated_chroma
     
 
-    def display_chroma(self, aggregated_chroma, start_time, end_time):
+    def display_chroma(self, aggregated_chroma):
         plt.figure(figsize=(10, 4))
-        plt.imshow(aggregated_chroma, aspect='auto', origin='lower', cmap='coolwarm', extent=[start_time, end_time, 0, aggregated_chroma.shape[0]])
+        plt.imshow(aggregated_chroma, aspect='auto', origin='lower', cmap='coolwarm', extent=[self.start_time, self.end_time, 0, aggregated_chroma.shape[0]])
         plt.xlabel("Times(frames)")
         plt.ylabel("Pitch Class")
         plt.colorbar(label="Intensity")
@@ -56,16 +56,16 @@ class EstimateChord():
         plt.show()
 
 
-    def get_key_signature(self, midi_data, start_time):
+    def get_key_signature(self):
         key_signature = None
 
-        for key_sig in midi_data.key_signature_changes:
-            if key_sig.time <= start_time:
+        for key_sig in self.midi_data.key_signature_changes:
+            if key_sig.time <= self.start_time:
                 key_signature = key_sig
             else:
                 break
 
-        print(f"Key signature at or before start_time ({start_time}): {key_signature}")
+        print(f"Key signature at or before start_time ({self.start_time}): {key_signature}")
         return key_signature
     
 
@@ -185,9 +185,9 @@ class EstimateChord():
         return chords
 
 
-    def run(self, start_time, end_time, midi_data):
-        key_signature = self.get_key_signature(midi_data, start_time)
+    def run(self):
+        key_signature = self.get_key_signature()
         key = self.setKey(key_signature)
-        chromagram = self.get_chromagram(midi_data, self.calc_double_length(end_time, midi_data), start_time, end_time)
+        chromagram = self.get_chromagram(self.calc_double_length())
         chord_list = self.display_estimated_chords(chromagram, key)
         return key, chord_list

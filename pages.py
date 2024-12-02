@@ -103,7 +103,7 @@ class TempoChangerPage():
 
         if st.session_state.midi_file is not None:
             if st.button("指定された範囲の音源を生成"):
-                st.session_state.default_tempo, tempo_times_one = mu.get_tempo(st.session_state.end_time, st.session_state.midi_data)
+                st.session_state.default_tempo, tempo_times_one = mu.get_tempo(st.session_state.start_time, st.session_state.end_time, st.session_state.midi_data)
                 print(f"default_tempo{st.session_state.default_tempo}")
                 count_in_midi = mu.run_midi_trimmed(st.session_state.midi_file, st.session_state.start_time, st.session_state.end_time, st.session_state.default_tempo, tempo_times_one)
                 adjusted_midi = cv.change_tempo(count_in_midi, st.session_state.user_tempo, st.session_state.default_tempo)
@@ -117,7 +117,7 @@ class TempoChangerPage():
         if st.session_state.generated_audio:
             mb = MusicscoreButton()
             es = EstimateChord(st.session_state.start_time, st.session_state.end_time, st.session_state.midi_data)
-            key, chord_list = es.run(st.session_state.start_time, st.session_state.end_time, st.session_state.midi_data)
+            key, chord_list = es.run()
 
             if mb.generate_musicscore_button:
                 produce_note = ProduceNote(chord_list, key, mb.progression_type)

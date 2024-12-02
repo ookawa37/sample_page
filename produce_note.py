@@ -164,7 +164,7 @@ class ProduceNote:
               difference_matrix[i+(constans.NUM-1)][j+(constans.NUM-1)] = 0.9
             elif harmonic == 0:#yes
               if i in up_range and j == plus_exception or j in up_range and i == plus_exception or i in down_range and j == minus_exception or j in down_range and i == minus_exception:
-                difference_matrix[i+(constans.NUM-1)][j+(constans.NUM-1)] = 0.3
+                difference_matrix[i+(constans.NUM-1)][j+(constans.NUM-1)] = 0.3#変えるかも
             else:
               if i in up_range and j in down_range or i in down_range and j in up_range:
                 difference_matrix[i+(constans.NUM-1)][j+(constans.NUM-1)] = 0.1

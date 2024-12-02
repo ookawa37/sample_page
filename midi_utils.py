@@ -1,7 +1,7 @@
 
 import pretty_midi
 
-def get_tempo(end_time, midi_data: pretty_midi.PrettyMIDI):
+def get_tempo(start_time, end_time, midi_data: pretty_midi.PrettyMIDI):
     # テンポを取得
     tempo_times, tempo_bpms = midi_data.get_tempo_changes()
     tempo_times = tempo_times[1:]
@@ -10,14 +10,23 @@ def get_tempo(end_time, midi_data: pretty_midi.PrettyMIDI):
     if tempo_times.size == 0:
         raise ValueError("テンポが正常に取得できませんでした")
     
+    prev_tempo_time = 0.0
+    for tempo_time in tempo_times:
+        if tempo_time > start_time:
+            break
+        prev_tempo_time = tempo_time
+    
     total_bpm = 0
     count = 0
     if len(tempo_bpms) > 0:
         for time, bpm in zip(tempo_times, tempo_bpms):
             if time > end_time:
                 break
-            total_bpm += bpm
-            count += 1
+            elif prev_tempo_time > time:
+                continue
+            else:
+                total_bpm += bpm
+                count += 1
         
         tempo_bpm = total_bpm / count
     else:
