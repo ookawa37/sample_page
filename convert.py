@@ -1,6 +1,7 @@
 import tempfile
 from midi2audio import FluidSynth
 from pretty_midi import PrettyMIDI
+import pretty_midi
 
 def convert_midi_to_wav(midi_data):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mid") as temp_midi:
@@ -16,10 +17,20 @@ def convert_midi_to_wav(midi_data):
     pass
 
 def change_tempo(trimmed_midi:PrettyMIDI, user_tempo, default_tempo):
-    if trimmed_midi:
-        trimmed_midi.adjust_times(
-            [0, trimmed_midi.get_end_time()],
-            [0, trimmed_midi.get_end_time() * (default_tempo / user_tempo)]
-        )
+    change_tempo_midi = pretty_midi.PrettyMIDI()
+    time_scale = default_tempo / user_tempo
 
-    return trimmed_midi
+    for instrument in trimmed_midi.instruments:
+        new_instrument = pretty_midi.Instrument(program=instrument.program, is_drum=instrument.is_drum)
+        for note in instrument.notes:
+
+            adjusted_note = pretty_midi.Note(
+                velocity=note.velocity,
+                pitch=note.pitch,
+                start=note.start * time_scale,
+                end=note.end * time_scale
+            )
+            new_instrument.notes.append(adjusted_note)
+        change_tempo_midi.instruments.append(new_instrument)
+
+    return change_tempo_midi

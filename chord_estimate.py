@@ -13,7 +13,7 @@ class EstimateChord():
 
 
     def calc_double_length(self, end_time, midi_data):
-        tempo_bpm = get_tempo(end_time, midi_data)
+        tempo_bpm, _ = get_tempo(end_time, midi_data)
         beat_length = 60 / tempo_bpm
         double_length = beat_length * 2
 

@@ -1,18 +1,29 @@
 
 import pretty_midi
 
-def get_tempo(get_time, midi_data: pretty_midi.PrettyMIDI):
+def get_tempo(end_time, midi_data: pretty_midi.PrettyMIDI):
     # テンポを取得
     tempo_times, tempo_bpms = midi_data.get_tempo_changes()
+    tempo_times = tempo_times[1:]
+    tempo_bpms = tempo_bpms[1:]
+
+    if tempo_times.size == 0:
+        raise ValueError("テンポが正常に取得できませんでした")
+    
+    total_bpm = 0
+    count = 0
     if len(tempo_bpms) > 0:
-        tempo_bpm = tempo_bpms[0]
         for time, bpm in zip(tempo_times, tempo_bpms):
-            if time > get_time:
+            if time > end_time:
                 break
-            tempo_bpm = bpm
+            total_bpm += bpm
+            count += 1
+        
+        tempo_bpm = total_bpm / count
     else:
         tempo_bpm = 120
-    return tempo_bpm
+
+    return tempo_bpm, tempo_times[0]
 
 
 def cut_midi(midi_file, start_time, end_time):
@@ -43,23 +54,16 @@ def get_first_key_signature(midi_data):
     return key_signature
 
 
-def trim_silence_from_start(midi_data: pretty_midi.PrettyMIDI):
-    note_start_times = [
-        note.start for instrument in midi_data.instruments for note in instrument.notes
-    ]
-    
-    if note_start_times:
-        first_note_time = min(note_start_times)
-    else:
+def trim_silence_from_start(midi_data: pretty_midi.PrettyMIDI, start_time, tempo_times_one):
+    if start_time >= tempo_times_one:
         return midi_data
     
-    if first_note_time > 0:
+    else:
         midi_data.adjust_times(
-            [first_note_time, midi_data.get_end_time()],
-            [0, midi_data.get_end_time() - first_note_time]
+        [tempo_times_one, midi_data.get_end_time()],
+        [0, midi_data.get_end_time() - tempo_times_one]
         )
-    
-    return midi_data
+        return midi_data
 
 
 def get_closeest_downbeats(midi_data, start_time, end_time):
@@ -112,13 +116,13 @@ def combine_midi(midi_data, count_in_midi, default_tempo, count_in_interval=4):
 
         # 次のカウントインの開始位置を計算
         current_time += count_in_interval * (60.0 / default_tempo)  # 次のカウントインを入れる時刻
-
+        
     return combined_midi
 
 
-def run_midi_trimmed(midi_file, start_time, end_time, default_tempo):
+def run_midi_trimmed(midi_file, start_time, end_time, default_tempo, tempo_times_one):
     trimmed_midi = cut_midi(midi_file, start_time, end_time)
-    new_midi_data = trim_silence_from_start(trimmed_midi)
+    new_midi_data = trim_silence_from_start(trimmed_midi, start_time, tempo_times_one)
     count_in_midi = combine_midi(new_midi_data, generate_count_in(default_tempo), default_tempo)
 
     return count_in_midi

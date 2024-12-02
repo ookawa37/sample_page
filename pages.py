@@ -103,8 +103,9 @@ class TempoChangerPage():
 
         if st.session_state.midi_file is not None:
             if st.button("指定された範囲の音源を生成"):
-                st.session_state.default_tempo = mu.get_tempo(st.session_state.end_time, st.session_state.midi_data)
-                count_in_midi = mu.run_midi_trimmed(st.session_state.midi_file, st.session_state.start_time, st.session_state.end_time, st.session_state.default_tempo)
+                st.session_state.default_tempo, tempo_times_one = mu.get_tempo(st.session_state.end_time, st.session_state.midi_data)
+                print(f"default_tempo{st.session_state.default_tempo}")
+                count_in_midi = mu.run_midi_trimmed(st.session_state.midi_file, st.session_state.start_time, st.session_state.end_time, st.session_state.default_tempo, tempo_times_one)
                 adjusted_midi = cv.change_tempo(count_in_midi, st.session_state.user_tempo, st.session_state.default_tempo)
                 self.convert_and_store_audio(adjusted_midi)
                 self.display_generated_audio()
