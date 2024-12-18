@@ -20,7 +20,7 @@ class TempoChangerPage():
         if 'initialized' not in st.session_state:
             st.session_state.midi_file = None
             st.session_state.midi_data = None
-            st.session_state.user_tempo = 120
+            st.session_state.user_tempo = 80
             st.session_state.default_tempo = None
             st.session_state.generated_audio = None
             st.session_state.audio_playback = None

@@ -1,4 +1,4 @@
 from pages import TempoChangerPage
 
-page = TempoChangerPage("Scale Trainer")
+page = TempoChangerPage("スケールスタジオ")
 page.run_pages()
