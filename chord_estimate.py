@@ -104,7 +104,7 @@ class EstimateChord():
         return vector
     
 
-    def include_top3(self, possible_chords_full, possible_chords_partial, major_or_minor, sorted_indices):
+    def include_top(self, possible_chords_full, possible_chords_top4, possible_chords_partial, major_or_minor, sorted_indices):
         if major_or_minor == "minor":
             m = "m"
         else:
@@ -117,6 +117,11 @@ class EstimateChord():
             elif len(matched_notes) == 2:
                 possible_chords_partial.append(root_note + m)
 
+            #トップ4のうちの3つで構成されるコードを格納
+            matched_notes_2 = [note for note in sorted_indices[:4] if note in intervals]
+            if len(matched_notes_2) == 3:
+                possible_chords_top4.append(root_note + m)
+
 
     # クロマグラムからコードを推定する関数
     def estimate_chords_from_chromagram(self, chroma_matrix, key):
@@ -127,22 +132,47 @@ class EstimateChord():
             chroma_column = chroma_matrix[:, i]
             # 音量の高い順に音階をソート（演奏されている可能性が高い音）
             sorted_indices = np.argsort(chroma_column)[::-1]
-            
-            top3_names = []
-            for idx in sorted_indices[:3]:
-                top3_name = note.Note(idx).name
-                top3_names.append(top3_name)
 
             # コードのルート音と構成音の推定
             possible_chords_full = []
+            possible_chords_top4 = []
             possible_chords_partial = []
-            self.include_top3(possible_chords_full, possible_chords_partial, "major", sorted_indices)
-            self.include_top3(possible_chords_full, possible_chords_partial, "minor", sorted_indices)
+            self.include_top(possible_chords_full, possible_chords_top4, possible_chords_partial, "major", sorted_indices)
+            self.include_top(possible_chords_full, possible_chords_top4, possible_chords_partial, "minor", sorted_indices)
 
             # 3つ一致するコードがあればそれを優先的に出力
             if possible_chords_full:
                 chord_names.append(", ".join(possible_chords_full))
-            # 3つ一致するコードがない場合
+
+            elif possible_chords_top4:
+                if len(possible_chords_top4) == 1:
+                    chord_names.append(", ".join(possible_chords_top4))
+                elif key in possible_chords_top4:
+                    chord_names.append(key)
+                else:
+                    #クロマベクトルに基づき1つに絞る
+                    max_score = -1
+                    best_chord = None
+
+                    for chord in possible_chords_top4:
+                        chord_without_m = chord.rstrip("m")
+                        if chord_without_m in constans.CHORD_ID["major"]:
+                            indices = constans.CHORD_ID["major"][chord_without_m]
+                        elif chord_without_m in constans.CHORD_ID["minor"]:
+                            indices = constans.CHORD_ID["minor"][chord_without_m]
+                        else:
+                            raise ValueError(f"適するコードがありません{chord}, {chord_without_m}")
+
+                        chord_vector = self.generate_chroma_vector(indices)#コードベクトル作成
+                        score = np.dot(chroma_column, chord_vector)#内積計算
+
+                        # 最大値を更新
+                        if score > max_score:
+                            max_score = score
+                            best_chord = chord
+                    chord_names.append(best_chord)
+
+            # 上以外の場合
             elif possible_chords_partial:
                 #キーと一致するものを優先
                 if key in possible_chords_partial:
