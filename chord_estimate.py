@@ -60,7 +60,7 @@ class EstimateChord():
         key_signature = None
 
         for key_sig in self.midi_data.key_signature_changes:
-            if key_sig.time <= self.start_time:
+            if key_sig.time <= ( self.start_time + 2 ):
                 key_signature = key_sig
             else:
                 break
